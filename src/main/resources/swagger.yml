@@ -1,0 +1,149 @@
+---
+swagger: '2.0'
+info:
+  description: Movie API
+  version: 1.0.0
+  title: Movie API
+  license:
+    name: MIT License
+    url: https://opensource.org/licenses/MIT
+host: localhost
+basePath: /v1
+schemes:
+  - http
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  '/transactions':
+    post:
+      tags:
+        - Transaction
+      summary: Post a transaction
+      description: Report the projected cost of movie tickets
+      operationId: postTransaction
+      parameters:
+        - in: body
+          name: transactionIn
+          description: Transaction Input
+          required: true
+          schema:
+            $ref: '#/definitions/TransactionIn'
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/TransactionOut'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ResponseErrorList'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ResponseErrorList'
+        400:
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/ResponseErrorList'
+        422:
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ResponseErrorList'
+definitions:
+  TransactionIn:
+    type: object
+    required:
+      - transactionId
+      - customers
+    properties:
+      transactionId:
+        type: integer
+        format: int64
+      customers:
+        type: array
+        description: Customer array
+        items:
+          $ref: '#/definitions/Customer'
+  TransactionOut:
+    type: object
+    required:
+      - transactionId
+      - tickets
+      - totalCost
+    properties:
+      transactionId:
+        type: integer
+        format: int64
+      tickets:
+        type: array
+        description: Ticket array
+        items:
+          $ref: '#/definitions/Ticket'
+      totalCost:
+        type: number
+        multipleOf: 0.01
+#        format: double
+  Customer:
+    type: object
+    required:
+      - name
+      - age
+    properties:
+      name:
+        type: string
+        description: Customer name
+      age:
+        type: integer
+        description: Customer age
+  Ticket:
+    type: object
+    required:
+      - ticketType
+      - quantity
+      - totalCost
+    properties:
+      ticketType:
+        type: string
+        enum:
+          - Adult
+          - Senior
+          - Teen
+          - Children
+        description: Ticket type
+      quantity:
+        type: integer
+        description: Ticket quantity
+      totalCost:
+        type: number
+        multipleOf: 0.01
+#        format: double
+  ResponseErrorList:
+    type: object
+    required:
+      - errors
+    properties:
+      errors:
+        type: array
+        items:
+          $ref: '#/definitions/ResponseErrorListError'
+  ResponseErrorListError:
+    required:
+      - code
+      - detail
+      - title
+    properties:
+      code:
+        type: string
+        description: Error code
+      title:
+        type: string
+        description: Error title
+      detail:
+        type: string
+        description: Error detail
+      meta:
+        type: object
+        description: Optional additional data for specific error types
+        properties: {}

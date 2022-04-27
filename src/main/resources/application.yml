@@ -1,0 +1,11 @@
+spring.main.log-startup-info: off
+
+cost:
+  adult: 25
+  teen: 12
+  children: 5
+
+discount:
+  children-percentage: 25
+  children-quantity: 3
+  senior-percentage: 30

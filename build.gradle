@@ -1,0 +1,103 @@
+import io.swagger.codegen.config.CodegenConfigurator
+import io.swagger.codegen.DefaultGenerator
+
+buildscript {
+    ext {
+        springBootVersion = '2.6.7'
+    }
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath('io.swagger:swagger-codegen:2.4.27')
+    }
+}
+
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version "${springBootVersion}"
+}
+
+apply plugin: 'idea'
+
+group 'au.com.sportsbet'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compileOnly 'org.projectlombok:lombok:1.18.24'
+    annotationProcessor 'org.projectlombok:lombok:1.18.24'
+
+    implementation platform("org.springframework.boot:spring-boot-dependencies:${springBootVersion}")
+
+    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-log4j2'
+
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.13.2'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.2.2'
+
+    implementation 'io.swagger:swagger-annotations:1.6.6'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.hamcrest:hamcrest:2.2'
+    testImplementation 'org.mockito:mockito-core:3.5.10'
+    testImplementation 'commons-io:commons-io:2.11.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+
+    testCompileOnly 'org.projectlombok:lombok:1.18.24'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.24'
+
+}
+
+configurations {
+    all*.exclude module: 'spring-boot-starter-logging'
+}
+
+task generateApi {
+    doLast {
+        def config = new CodegenConfigurator()
+        config.setLang("spring")
+        config.setApiPackage("au.com.sportsbet.movie.tickets.api")
+        config.setModelPackage("au.com.sportsbet.movie.tickets.model")
+        config.setInputSpec("${rootProject.rootDir}/src/main/resources/swagger.yml")
+        config.setOutputDir("${rootProject.buildDir}/generated")
+        config.setAdditionalProperties([
+                'dateLibrary'   : 'java8', // Date library
+                'useTags'       : 'true',  // Use tags for naming
+                'interfaceOnly' : 'true'   // Generating the Controller API interface and models only
+        ])
+        new DefaultGenerator().opts(config.toClientOptInput()).generate()
+    }
+}
+
+sourceSets {
+    generated {
+        java {
+            srcDirs = ["${project.buildDir}/generated/src/main/java"]
+        }
+    }
+}
+
+compileJava {
+    sourceCompatibility = '1.8'
+    targetCompatibility = '1.8'
+
+    dependsOn('generateApi')
+
+    source += sourceSets.generated.java
+}
+
+//springBoot {
+//    mainClass = 'au.com.sportsbet.movie.tickets.Application'
+//}
+
+test {
+    useJUnitPlatform()
+}
